@@ -96,9 +96,9 @@ node server/server.js
 ### 方法一：SSH 命令行添加（推荐，一键完成）
 登录 Serv00 & CT8 SSH，执行以下命令（**请先替换命令中的“你的用户名”和“你的域名”**）：
 ```bash
-(crontab -l 2>/dev/null; echo "*/5 * * * * pgrep -f 'node server/server.js' >/dev/null || (cd /home/你的用户名/domains/你的域名/uptime-kuma && nohup node server/server.js >/dev/null 2>&1 &)") | crontab -
+(crontab -l 2>/dev/null; echo "*/2 * * * * pgrep -f 'node server/server.js' >/dev/null || (cd /home/你的用户名/domains/你的域名/uptime-kuma && nohup node server/server.js >/dev/null 2>&1 &)") | crontab -
 ```
-> 该命令会将一个新的 cron 任务追加到当前用户的 crontab 中，每 5 分钟检查一次 Uptime Kuma 是否在运行，不在就启动。
+> 该命令会将一个新的 cron 任务追加到当前用户的 crontab 中，每 2 分钟检查一次 Uptime Kuma 是否在运行，不在就启动。
 
 执行完成后，可以用 `crontab -l` 查看是否添加成功。
 
@@ -108,7 +108,7 @@ node server/server.js
    ```
    pgrep -f "node server/server.js" >/dev/null || (cd /home/你的用户名/domains/你的域名/uptime-kuma && nohup node server/server.js >/dev/null 2>&1 &)
    ```
-3. **Interval** 选择 `*/5 * * * *`（每5分钟执行一次）。
+3. **Interval** 选择 `*/2 * * * *`（每5分钟执行一次）。
 4. 勾选 **Enabled**，保存。
 
 ---
