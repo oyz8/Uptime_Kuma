@@ -1,0 +1,87 @@
+name: 构建 Serv00 专用版 Uptime Kuma
+
+on:
+  workflow_dispatch:
+    inputs:
+      port:
+        description: '请输入 Serv00 分配的端口号'
+        required: true
+        default: '7070'
+      version:
+        description: 'Uptime Kuma 版本号（如 2.3.2）'
+        required: true
+        default: '2.3.2'
+
+jobs:
+  build:
+    name: 构建 Uptime Kuma
+    runs-on: ubuntu-latest
+    steps:
+    
+      - name: 拉取官方源码（版本：${{ github.event.inputs.version }}）
+        uses: actions/checkout@v4
+        with:
+          repository: louislam/uptime-kuma
+          ref: refs/tags/${{ github.event.inputs.version }}
+
+      - name: 安装 Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: 安装项目依赖
+        run: npm install
+
+      - name: 构建前端资源
+        run: npm run build
+
+      - name: 修复 Playwright 的 FreeBSD 兼容性
+        run: |
+          node -e "
+          const fs = require('fs');
+          const file = 'node_modules/playwright-core/lib/server/registry/index.js';
+          let content = fs.readFileSync(file, 'utf8');
+          let lines = content.split('\n');
+          lines[295] = lines[295].replace(/else throw new Error\\('Unsupported platform: ' \\+ process\\.platform\\);/, 'else { cacheDirectory = _path.default.join(os.homedir(), \\\".cache\\\"); }');
+          fs.writeFileSync(file, lines.join('\n'));
+          "
+
+      - name: 禁用真实浏览器监控
+        run: |
+          sed -i 's/.*RealBrowserMonitorType.*/\/\/ &/' server/uptime-kuma-server.js
+
+      - name: 生成 .env 文件（端口：${{ github.event.inputs.port }}）
+        run: |
+          echo "UPTIME_KUMA_PORT=${{ github.event.inputs.port }}" > .env
+          echo "DATA_DIR=./data" >> .env
+
+      - name: 移除开发依赖（减小体积）
+        run: npm prune --production
+
+      - name: 打包为 zip
+        run: |
+          zip -r uptime-kuma.zip . -x ".git/*" ".github/*" "node_modules/.cache/*"
+
+      - name: 发布 Release 并上传 zip
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ github.event.inputs.version }}-${{ github.run_number }}
+          name: "Uptime Kuma ${{ github.event.inputs.version }}"
+          body: |
+            ✅ 前端已构建  
+            ✅ 修复 FreeBSD Playwright 兼容性  
+            ✅ 已禁用真实浏览器监控  
+            📦 解压后直接运行，端口已设为 ${{ github.event.inputs.port }}
+          files: uptime-kuma.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 清理旧的工作流运行记录
+        if: always()
+        uses: Mattraks/delete-workflow-runs@v2
+        with:
+          token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          delete_workflow_pattern: ${{ github.workflow }}
+          retain_days: 0
+          keep_minimum_runs: 2
