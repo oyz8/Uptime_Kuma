@@ -12,6 +12,10 @@ on:
         required: true
         default: '2.3.2'
 
+permissions:
+  contents: write
+  actions: write
+
 jobs:
   build:
     name: 构建 Uptime Kuma
