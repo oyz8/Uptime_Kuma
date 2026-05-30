@@ -15,13 +15,18 @@ on:
 permissions:
   contents: write
   actions: write
+  id-token: write
 
 jobs:
   build:
     name: 构建 Uptime Kuma
     runs-on: ubuntu-latest
-    steps:
     
+    permissions:
+      contents: write
+      actions: write
+    
+    steps:
       - name: 拉取官方源码（版本：${{ github.event.inputs.version }}）
         uses: actions/checkout@v4
         with:
@@ -46,7 +51,10 @@ jobs:
           const file = 'node_modules/playwright-core/lib/server/registry/index.js';
           let content = fs.readFileSync(file, 'utf8');
           let lines = content.split('\n');
-          lines[295] = lines[295].replace(/else throw new Error\\('Unsupported platform: ' \\+ process\\.platform\\);/, 'else { cacheDirectory = _path.default.join(os.homedir(), \\\".cache\\\"); }');
+          lines[295] = lines[295].replace(
+            /else throw new Error\('Unsupported platform: ' \+ process\.platform\);/,
+            'else { cacheDirectory = _path.default.join(os.homedir(), \".cache\"); }'
+          );
           fs.writeFileSync(file, lines.join('\n'));
           "
 
@@ -64,19 +72,45 @@ jobs:
 
       - name: 打包为 zip
         run: |
-          zip -r uptime-kuma.zip . -x ".git/*" ".github/*" "node_modules/.cache/*"
+          zip -r uptime-kuma.zip . \
+            -x ".git/*" \
+            -x ".github/*" \
+            -x "node_modules/.cache/*"
+
+      - name: 验证 Token 权限（调试用）
+        run: |
+          echo "仓库: ${{ github.repository }}"
+          echo "触发者: ${{ github.actor }}"
+          echo "Tag: v${{ github.event.inputs.version }}-${{ github.run_number }}"
+          # 测试 API 访问权限
+          curl -s -o /dev/null -w "GitHub API 状态码: %{http_code}\n" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/repos/${{ github.repository }}"
 
       - name: 发布 Release 并上传 zip
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ github.event.inputs.version }}-${{ github.run_number }}
           name: "Uptime Kuma ${{ github.event.inputs.version }}"
+          draft: false
+          prerelease: false
           body: |
+            ## Uptime Kuma ${{ github.event.inputs.version }} FreeBSD 版
+            
             ✅ 前端已构建  
             ✅ 修复 FreeBSD Playwright 兼容性  
             ✅ 已禁用真实浏览器监控  
-            📦 解压后直接运行，端口已设为 ${{ github.event.inputs.port }}
+            📦 解压后直接运行，端口已设为 `${{ github.event.inputs.port }}`
+            
+            ### 使用方法
+            ```bash
+            unzip uptime-kuma.zip -d uptime-kuma
+            cd uptime-kuma
+            node server/server.js
+            ```
           files: uptime-kuma.zip
+          fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -84,8 +118,7 @@ jobs:
         if: always()
         uses: Mattraks/delete-workflow-runs@v2
         with:
-          token: ${{ github.token }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           repository: ${{ github.repository }}
-          delete_workflow_pattern: ${{ github.workflow }}
           retain_days: 0
           keep_minimum_runs: 2
