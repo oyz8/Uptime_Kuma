@@ -41,8 +41,8 @@
 # SSH 登录 Serv00，进入域名目录
 cd /home/你的用户名/domains/你的域名
 
-# 下载压缩包
-wget https://github.com/oyz8/Uptime_Kuma/releases/download/serv00-v2/uptime-kuma.zip
+# 下载压缩包（自动获取最新版本）
+wget https://github.com/oyz8/Uptime_Kuma/releases/latest/download/uptime-kuma.zip
 
 # 解压
 unzip uptime-kuma.zip -d uptime-kuma
@@ -91,13 +91,25 @@ node server/server.js
 
 ## 设置后台保活（Cron Job）
 
-1. Serv00 面板 → **Cron jobs** → Add cron job。
-2. **Command**（替换域名和用户名）：
-   ```bash
+为了确 Uptime Kuma 持续运行，我们使用 Cron 定时检查进程状态，若未运行则自动启动。
+
+### 方法一：SSH 命令行添加（推荐，一键完成）
+登录 Serv00 SSH，执行以下命令（**请先替换命令中的“你的用户名”和“你的域名”**）：
+```bash
+(crontab -l 2>/dev/null; echo "*/5 * * * * pgrep -f 'node server/server.js' >/dev/null || (cd /home/你的用户名/domains/你的域名/uptime-kuma && nohup node server/server.js >/dev/null 2>&1 &)") | crontab -
+```
+> 该命令会将一个新的 cron 任务追加到当前用户的 crontab 中，每 5 分钟检查一次 Uptime Kuma 是否在运行，不在就启动。
+
+执行完成后，可以用 `crontab -l` 查看是否添加成功。
+
+### 方法二：通过 Serv00 面板添加（可视化操作）
+1. 进入 **Serv00 面板 → Cron jobs** → **Add cron job**。
+2. **Command** 填写（同样替换用户名和域名）：
+   ```
    pgrep -f "node server/server.js" >/dev/null || (cd /home/你的用户名/domains/你的域名/uptime-kuma && nohup node server/server.js >/dev/null 2>&1 &)
    ```
-3. **Interval**：`*/5 * * * *`（每5分钟检查一次）。
-4. 勾选 Enabled，保存。
+3. **Interval** 选择 `*/5 * * * *`（每5分钟执行一次）。
+4. 勾选 **Enabled**，保存。
 
 ---
 
