@@ -1,4 +1,4 @@
-# Uptime Kuma 2.3.2 部署到 Serv00 完整教程
+# Uptime Kuma 2.3.2 部署到 Serv00 & CT8 教程
 # ⭐ **觉得有用？给个 Star 支持一下！**
 
 ## 目录
