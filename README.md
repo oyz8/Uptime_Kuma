@@ -5,7 +5,7 @@
 - [前期设置（端口与域名）](#前期设置端口与域名)
 - [方式一：直接下载预构建压缩包（推荐）](#方式一直接下载预构建压缩包推荐)
 - [方式二：通过 GitHub Actions 构建（自定义端口/版本）](#方式二通过-github-actions-构建自定义端口版本)
-- [部署到 Serv00（通用步骤）](#部署到-serv00通用步骤)
+- [部署到 Serv00 & CT8（通用步骤）](#部署到-Serv00 & CT8通用步骤)
 - [设置后台保活（Cron Job）](#设置后台保活cron-job)
 - [完成安装](#完成安装)
 - [常见问题](#常见问题)
@@ -15,14 +15,14 @@
 ## 前期设置（端口与域名）
 
 1. **创建端口**  
-   Serv00 面板 → **附加功能 → Custom applications** → Add a new application  
+   Serv00 & CT8 面板 → **附加功能 → Custom applications** → Add a new application  
    - Name：`uptime`  
    - Command：留空  
    - Working directory：`/home/你的用户名/domains/你的域名/uptime-kuma`  
    - Port：输入一个端口（如 `7070`），记下这个数字。
 
 2. **配置域名反向代理**  
-   Serv00 面板 → **WWW 站点**  
+   Serv00 & CT8 面板 → **WWW 站点**  
    - 删除旧的域名记录（可选）  
    - 点击 Add website：  
      - Domain：你的域名（如 `xxx.ct8.pl`）  
@@ -38,7 +38,7 @@
 
 ### 下载与配置
 ```bash
-# SSH 登录 Serv00，进入域名目录
+# SSH 登录 Serv00 & CT8，进入域名目录
 cd /home/你的用户名/domains/你的域名
 
 # 下载压缩包（自动获取最新版本）
@@ -53,7 +53,7 @@ echo "UPTIME_KUMA_PORT=7070" > .env
 echo "DATA_DIR=./data" >> .env
 ```
 
-然后跳转到 **[部署到 Serv00](#部署到-serv00通用步骤)**。
+然后跳转到 **[部署到 Serv00 & CT8](#部署到-Serv00 & CT8通用步骤)**。
 
 ---
 
@@ -63,10 +63,10 @@ echo "DATA_DIR=./data" >> .env
 
 ### 步骤
 1. 访问仓库 [oyz8/Uptime_Kuma](https://github.com/oyz8/Uptime_Kuma)（或你自己的 Fork）。
-2. 点击 **Actions** 标签 → 选择 **“构建 Serv00 专用版 Uptime Kuma”** → **Run workflow**。
+2. 点击 **Actions** 标签 → 选择 **“构建 FreeBSD 专用版 Uptime Kuma”** → **Run workflow**。
 3. 输入你的 **端口号**（如 `7070`）和 **版本**（默认 `2.3.2`），点击 Run。
 4. 等待构建完成，进入仓库 **Releases** 页面下载生成的 `uptime-kuma.zip`。
-5. 将 zip 上传到 Serv00 域名目录，解压：
+5. 将 zip 上传到 Serv00 & CT8 域名目录，解压：
    ```bash
    cd /home/你的用户名/domains/你的域名
    unzip uptime-kuma.zip -d uptime-kuma
@@ -75,7 +75,7 @@ echo "DATA_DIR=./data" >> .env
 
 ---
 
-## 部署到 Serv00（通用步骤）
+## 部署到 Serv00 & CT8（通用步骤）
 
 ```bash
 cd ~/domains/你的域名/uptime-kuma
@@ -94,7 +94,7 @@ node server/server.js
 为了确 Uptime Kuma 持续运行，我们使用 Cron 定时检查进程状态，若未运行则自动启动。
 
 ### 方法一：SSH 命令行添加（推荐，一键完成）
-登录 Serv00 SSH，执行以下命令（**请先替换命令中的“你的用户名”和“你的域名”**）：
+登录 Serv00 & CT8 SSH，执行以下命令（**请先替换命令中的“你的用户名”和“你的域名”**）：
 ```bash
 (crontab -l 2>/dev/null; echo "*/5 * * * * pgrep -f 'node server/server.js' >/dev/null || (cd /home/你的用户名/domains/你的域名/uptime-kuma && nohup node server/server.js >/dev/null 2>&1 &)") | crontab -
 ```
@@ -102,8 +102,8 @@ node server/server.js
 
 执行完成后，可以用 `crontab -l` 查看是否添加成功。
 
-### 方法二：通过 Serv00 面板添加（可视化操作）
-1. 进入 **Serv00 面板 → Cron jobs** → **Add cron job**。
+### 方法二：通过 Serv00 & CT8 面板添加（可视化操作）
+1. 进入 **Serv00 & CT8 面板 → Cron jobs** → **Add cron job**。
 2. **Command** 填写（同样替换用户名和域名）：
    ```
    pgrep -f "node server/server.js" >/dev/null || (cd /home/你的用户名/domains/你的域名/uptime-kuma && nohup node server/server.js >/dev/null 2>&1 &)
@@ -139,4 +139,4 @@ node server/server.js
 
 ---
 
-🎉 现在你已成功在 Serv00 上运行 Uptime Kuma 2.3.2，监控你的所有服务吧！
+🎉 现在你已成功在 Serv00 & CT8 上运行 Uptime Kuma 2.3.2，监控你的所有服务吧！
