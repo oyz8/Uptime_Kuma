@@ -51,7 +51,7 @@ bash <(fetch -o - https://raw.githubusercontent.com/oyz8/Uptime_Kuma/main/instal
 cd /home/你的用户名/domains/你的域名
 
 # 下载压缩包（自动获取最新版本）
-wget https://github.com/oyz8/Uptime_Kuma/releases/download/v2.3.2-2/uptime-kuma.zip
+wget https://github.com/oyz8/Uptime_Kuma/releases/download/v2.4.0-3/uptime-kuma.zip
 
 # 解压
 unzip uptime-kuma.zip -d uptime-kuma
