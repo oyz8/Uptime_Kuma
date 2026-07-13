@@ -4,6 +4,7 @@
 ---
 ## 一键部署 Uptime Kuma
 - 登录 SSH 输入以下命令：
+- 会删除默认网站并切换为 Proxy 模式，请注意备份数据
 ```shell
 bash <(fetch -o - https://raw.githubusercontent.com/oyz8/Uptime_Kuma/main/install.sh)
 ```
