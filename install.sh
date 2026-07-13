@@ -117,9 +117,6 @@ install_keeper() {
     KEEPER_PASS=${KEEPER_PASS:-admin}
     echo ""
 
-    # 启用二进制执行权限
-    devil binexec on
-
     # 清理旧网站和目录
     if devil www list | grep -qi "${KEEP_SUBDOMAIN}.*${USERNAME_LOWER}"; then
         devil www del "$KEEP_DOMAIN" || true
@@ -196,7 +193,7 @@ EOF
     devil www restart "$KEEP_DOMAIN"
     sleep 5
 
-    # 主动触发一次保活，确保 Uptime Kuma 被立刻拉起来
+    # 主动触发一次保活，确保 Uptime Kuma 被立刻拉起
     info "触发一次即时保活..."
     curl -s -o /dev/null http://${KEEP_DOMAIN}/oyz8 || true
 }
@@ -233,6 +230,9 @@ main() {
     info "============================================"
     info " Uptime Kuma + 保活守护 全自动部署"
     info "============================================"
+
+        info "激活二进制执行权限..."
+    devil binexec on
 
     install_uptime_kuma
     install_keeper
