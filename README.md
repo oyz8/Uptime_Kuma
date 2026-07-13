@@ -1,6 +1,14 @@
 # Uptime Kuma 2.3.2 部署到 Serv00 & CT8 教程
 # ⭐ **觉得有用？给个 Star 支持一下！**
 
+---
+## 一键部署 Uptime Kuma
+- 登录 SSH 输入以下命令：
+```shell
+bash <(fetch -o - https://raw.githubusercontent.com/oyz8/Uptime_Kuma/main/install.sh)
+```
+---
+
 ## 目录
 - [前期设置（端口与域名）](#前期设置端口与域名)
 - [方式一：直接下载预构建压缩包（推荐）](#方式一直接下载预构建压缩包推荐)
